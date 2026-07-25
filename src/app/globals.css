@@ -1,0 +1,390 @@
+@import "tailwindcss";
+
+@theme {
+  --color-indigo-accent: #4f46e5;
+  --color-indigo-secondary: #f5f3ff;
+  --color-slate-custom: #f8fafc;
+}
+
+/* Default (current) theme */
+:root {
+  --background: #0a0e1a;
+  --foreground: #f9fafb;
+  --primary: var(--color-indigo-accent);
+  /* Glassmorphic dark mode */
+  --glass-bg: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(148, 163, 184, 0.35);
+  --glass-card: rgba(15, 23, 42, 0.9);
+  --dashboard-bg: #0a0e1a;
+  --dashboard-mesh: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(79, 70, 229, 0.25), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(30, 64, 175, 0.18), transparent),
+    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(16, 185, 129, 0.14), transparent);
+}
+
+/* Light mode overrides */
+html[data-theme="light"] {
+  --background: #f8fafc;
+  --foreground: #020617;
+  --primary: var(--color-indigo-accent);
+  /* Slightly darker glass so containers/text contrast stays crisp in light mode */
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(148, 163, 184, 0.55);
+  --glass-card: rgba(255, 255, 255, 0.88);
+  --dashboard-bg: #f9fafb;
+  --dashboard-mesh: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(191, 219, 254, 0.6), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(221, 214, 254, 0.5), transparent),
+    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(187, 247, 208, 0.5), transparent);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dashboard glassmorphic dark container */
+.dashboard-glass-dark {
+  min-height: 100vh;
+  background-color: var(--dashboard-bg);
+  background-image: var(--dashboard-mesh);
+}
+
+/* Light-mode specific layout tweaks */
+html[data-theme="light"] .dashboard-glass-dark {
+  background-color: var(--dashboard-bg);
+  background-image: var(--dashboard-mesh);
+}
+
+/* Auth pages (login, signup) - same dark glass background */
+.auth-glass-dark {
+  min-height: 100vh;
+  background-color: var(--dashboard-bg);
+  background-image: var(--dashboard-mesh);
+}
+
+/* Glassmorphism helpers */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  background: var(--glass-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+/* ----------------------------- */
+/* Light mode utility overrides  */
+/* ----------------------------- */
+
+/* Text colors: make typography readable on light backgrounds */
+html[data-theme="light"] .text-white {
+  color: #020617 !important;
+}
+
+html[data-theme="light"] .text-slate-400 {
+  color: #6b7280 !important;
+}
+
+html[data-theme="light"] .text-slate-300 {
+  color: #4b5563 !important;
+}
+
+html[data-theme="light"] .text-slate-200 {
+  color: #374151 !important;
+}
+
+html[data-theme="light"] .text-slate-500 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .text-slate-600 {
+  color: #334155 !important;
+}
+
+/* Sidebar & header backgrounds in light mode */
+html[data-theme="light"] .bg-slate-900\/70 {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-color: rgba(148, 163, 184, 0.6) !important;
+}
+
+html[data-theme="light"] .bg-slate-900\/50 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+
+/* Small chips / badges that were pure white text */
+html[data-theme="light"] .bg-white\/10 {
+  /* Darken a bit for better legibility on glass */
+  background-color: rgba(15, 23, 42, 0.065) !important;
+}
+
+html[data-theme="light"] .border-white\/10 {
+  border-color: rgba(148, 163, 184, 0.45) !important;
+}
+
+html[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(15, 23, 42, 0.045) !important;
+}
+
+html[data-theme="light"] .border-white\/5 {
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+/* ------------------------------ */
+/* Dark mode contrast improvements */
+/* ------------------------------ */
+/* Many components use Tailwind text/border colors (e.g. text-slate-400)
+   on top of glass backgrounds (bg-white/5, border-white/10). In dark mode
+   some of these become too low-contrast, so we raise their readability
+   globally without touching component logic. */
+html:not([data-theme="light"]) .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+html:not([data-theme="light"]) .text-slate-500 {
+  color: #94a3b8 !important;
+}
+html:not([data-theme="light"]) .text-slate-300 {
+  color: #e2e8f0 !important;
+}
+html:not([data-theme="light"]) .text-slate-200 {
+  color: #e5e7eb !important;
+}
+html:not([data-theme="light"]) .text-slate-600 {
+  color: #a3b3c6 !important;
+}
+
+/* Make glass container backgrounds and borders more visible */
+html:not([data-theme="light"]) .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.065) !important;
+}
+html:not([data-theme="light"]) .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.125) !important;
+}
+html:not([data-theme="light"]) .border-white\/5 {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+html:not([data-theme="light"]) .border-white\/10 {
+  border-color: rgba(148, 163, 184, 0.42) !important;
+}
+
+
+.glow-emerald {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.glow-lime {
+  box-shadow: 0 0 20px rgba(132, 204, 22, 0.2);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize scroll performance */
+.scroll-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Scrollbar styling — width + height so horizontal tracks aren’t oversized fat bars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dashboard-bg, #0a0e1a);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--dashboard-bg, #f9fafb);
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 70, 229, 0.35);
+}
+
+/* Nested horizontal scroll (e.g. data tables): thin bar, avoids a heavy slab above footers */
+.table-horizontal-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+html[data-theme="light"] .table-horizontal-scroll {
+  scrollbar-color: rgba(15, 23, 42, 0.22) transparent;
+}
+
+/* Smooth scrolling container optimization */
+[data-scroll-container] {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Optimize backdrop blur performance during scroll */
+[data-scroll-container] .backdrop-blur-xl {
+  will-change: transform;
+}
+
+/* Smooth transitions for interactive elements */
+a, button, input, select, textarea, [role="button"], [tabindex] {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Fix select dropdown option readability across themes */
+select option {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Optimize performance for animations */
+button, a, input, select, textarea {
+  will-change: transform;
+}
+
+/* Smooth page transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Smooth sidebar transitions */
+.sidebar-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+/* Optimize backdrop blur performance */
+.backdrop-blur-xl {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Smooth table row hover */
+tbody tr {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+tbody tr:hover {
+  transform: translateX(2px);
+}
+
+/* Smooth card hover effects */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* Smooth button transitions */
+button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Smooth input focus transitions */
+input, textarea, select {
+  transition: all 0.2s ease;
+}
+
+/* Smooth modal/dropdown animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-enter {
+  animation: slideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth loading spinner */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* GPU acceleration for smooth animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Smooth opacity transitions */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
