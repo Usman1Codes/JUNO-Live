@@ -31,10 +31,8 @@ export default async function DashboardLayout({
         redirect("/login?error=WrongRole")
     }
 
-    const { prisma } = await import("@/lib/prisma")
-    const storeWithOnboarding = await prisma.store.findFirst({
-        where: { userId: session.user.id, onboardingComplete: true }
-    })
+    // Mock store onboarding for frontend demo
+    const storeWithOnboarding = { id: "mock-store", onboardingComplete: true }
 
     if (!storeWithOnboarding) {
         redirect("/onboarding")
