@@ -9,7 +9,7 @@ frontend:
         - npx prisma generate
     build:
       commands:
-        - env | grep -e NEXT_PUBLIC_ >> .env.production
+        - echo "NEXT_PUBLIC_MOCK_MODE=true" > .env.production
         - npm run build
   artifacts:
     baseDirectory: .next
