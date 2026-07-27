@@ -3,10 +3,13 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
+        - nvm install 20
+        - nvm use 20
+        - npm install
         - npx prisma generate
     build:
       commands:
+        - env | grep -e NEXT_PUBLIC_ >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next
