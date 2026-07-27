@@ -29,11 +29,17 @@ export default function FlaggedEmailPage() {
     const fetchFlaggedEmails = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch("/api/juno-engine/flagged-emails")
-            if (res.ok) {
-                const data = await res.json()
-                setFlaggedEmails(data.flaggedEmails ?? [])
-            }
+            await new Promise((r) => setTimeout(r, 400))
+            setFlaggedEmails([
+                {
+                    id: "mock_flag_1",
+                    subject: "Suspicious message",
+                    from: "spammer@example.com",
+                    flaggedAt: new Date().toISOString(),
+                    reason: "Failed anti-spam check",
+                    priority: "high"
+                }
+            ])
         } catch {
             setFlaggedEmails([])
         } finally {
@@ -48,10 +54,8 @@ export default function FlaggedEmailPage() {
     const handleDelete = async (id: string) => {
         setDeletingId(id)
         try {
-            const res = await fetch(`/api/juno-engine/flagged-emails/${id}`, { method: "DELETE" })
-            if (res.ok) {
-                setFlaggedEmails((prev) => prev.filter((e) => e.id !== id))
-            }
+            await new Promise((r) => setTimeout(r, 400))
+            setFlaggedEmails((prev) => prev.filter((e) => e.id !== id))
         } finally {
             setDeletingId(null)
         }

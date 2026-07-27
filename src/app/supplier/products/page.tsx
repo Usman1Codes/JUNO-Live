@@ -74,13 +74,36 @@ export default function SupplierProductsPage() {
         }
     }, [error])
 
+let MOCK_PRODUCTS: Product[] = [
+    {
+        id: "mock_p1",
+        title: "Sample Widget",
+        description: "A very nice widget.",
+        price: 29.99,
+        sku: "WIDG-001",
+        imageUrl: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: "mock_p2",
+        title: "Vendor Synced Product",
+        description: "Synced from vendor catalog.",
+        price: 50.00,
+        sku: "VEND-SYNC",
+        imageUrl: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isSynced: true,
+        vendor: { id: "v1", businessName: "Acme Corp" }
+    }
+]
+
     const fetchProducts = async () => {
         try {
             setLoading(true)
-            const res = await fetch("/api/supplier/products")
-            if (!res.ok) throw new Error("Failed to fetch products")
-            const data = await res.json()
-            setProducts(data.products || [])
+            await new Promise(r => setTimeout(r, 600))
+            setProducts([...MOCK_PRODUCTS])
             setError("")
         } catch {
             setError("Failed to load products")
@@ -116,23 +139,15 @@ export default function SupplierProductsPage() {
     }
 
     const handleDelete = async (productId: string) => {
-        // Check if this is a synced product
         const product = products.find(p => p.id === productId)
         if (product?.isSynced) {
             setError("Synced products from vendors cannot be deleted. You can only edit them.")
             return
         }
-
         if (!confirm("Are you sure you want to delete this product?")) return
-
         try {
-            const res = await fetch(`/api/supplier/products/${productId}`, {
-                method: "DELETE"
-            })
-            if (!res.ok) {
-                const data = await res.json()
-                throw new Error(data.message || "Failed to delete product")
-            }
+            await new Promise(r => setTimeout(r, 600))
+            MOCK_PRODUCTS = MOCK_PRODUCTS.filter(p => p.id !== productId)
             setSuccess("Product deleted successfully")
             fetchProducts()
         } catch (err) {
@@ -146,43 +161,26 @@ export default function SupplierProductsPage() {
         setError("")
 
         try {
-            const url = editingProduct
-                ? `/api/supplier/products/${editingProduct.id}`
-                : "/api/supplier/products"
-            const method = editingProduct ? "PUT" : "POST"
-
-            // If a new image file is selected, upload it first to get a URL
+            await new Promise(r => setTimeout(r, 600))
             let finalImageUrl = formData.imageUrl || null
-            if (imageFile) {
-                const fd = new FormData()
-                fd.append("file", imageFile)
-                const uploadRes = await fetch("/api/uploads/supplier-product-image", {
-                    method: "POST",
-                    body: fd
-                })
-                if (!uploadRes.ok) {
-                    const data = await uploadRes.json().catch(() => ({}))
-                    throw new Error(data.message || "Failed to upload image")
-                }
-                const uploadData = await uploadRes.json()
-                finalImageUrl = uploadData.url || null
-            }
 
-            const res = await fetch(url, {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+            if (editingProduct) {
+                MOCK_PRODUCTS = MOCK_PRODUCTS.map(p => 
+                    p.id === editingProduct.id 
+                        ? { ...p, title: formData.title, description: formData.description || null, price: parseFloat(formData.price), sku: formData.sku || null, imageUrl: finalImageUrl } 
+                        : p
+                )
+            } else {
+                MOCK_PRODUCTS.push({
+                    id: "mock_p_" + Date.now(),
                     title: formData.title,
                     description: formData.description || null,
                     price: parseFloat(formData.price),
                     sku: formData.sku || null,
-                    imageUrl: finalImageUrl
+                    imageUrl: finalImageUrl,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 })
-            })
-
-            if (!res.ok) {
-                const data = await res.json()
-                throw new Error(data.message || "Failed to save product")
             }
 
             setSuccess(editingProduct ? "Product updated successfully" : "Product created successfully")

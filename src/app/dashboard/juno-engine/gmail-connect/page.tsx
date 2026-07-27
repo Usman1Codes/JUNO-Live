@@ -98,19 +98,8 @@ function GmailConnectContent() {
     }, [businessName, themeDraft])
 
     const loadStoreTheme = useCallback(async (storeId: string, signal?: AbortSignal) => {
-        const res = await fetch(`/api/stores/${encodeURIComponent(storeId)}`, { signal })
-        const raw = await res.json().catch(() => ({}))
-        if (!res.ok) return
-        if (!raw || typeof raw !== "object" || Array.isArray(raw)) return
-        const data = raw as Record<string, unknown>
-        if (typeof data.businessName === "string" && data.businessName.trim()) {
-            setBusinessName(data.businessName.trim())
-        }
-        // Only apply theme when the API included the field. If the key is missing (e.g. older
-        // GET fallback), do not overwrite local state — avoids a stale GET wiping a just-saved theme.
-        if (Object.prototype.hasOwnProperty.call(data, "gmailReplyTheme")) {
-            setThemeDraft(parseGmailReplyThemeJson(data.gmailReplyTheme ?? null))
-        }
+        await new Promise((r) => setTimeout(r, 400))
+        setBusinessName("Mock Store")
     }, [])
 
     useEffect(() => {
@@ -121,9 +110,8 @@ function GmailConnectContent() {
         let cancelled = false
         ;(async () => {
             try {
-                const res = await fetch("/api/stores")
-                if (!res.ok || cancelled) return
-                const data = (await res.json()) as { stores?: { id: string; isActive: boolean }[] }
+                await new Promise((r) => setTimeout(r, 400))
+                const data = { stores: [{ id: "mock_store", isActive: true }] }
                 const active = (data.stores || []).find((s) => s.isActive)
                 if (!cancelled) setActiveStoreId(active?.id ?? null)
             } catch {
@@ -187,12 +175,9 @@ function GmailConnectContent() {
     useEffect(() => {
         const checkConnection = async () => {
             try {
-                const res = await fetch("/api/integrations/gmail/status")
-                if (res.ok) {
-                    const data = await res.json()
-                    setIsConnected(data.connected || false)
-                    setGmailEmail(data.email || null)
-                }
+                await new Promise((r) => setTimeout(r, 400))
+                setIsConnected(false)
+                setGmailEmail(null)
             } catch {
                 // Silent fail
             } finally {
@@ -231,36 +216,24 @@ function GmailConnectContent() {
     const handleConnect = async () => {
         setConnecting(true)
         try {
-            const res = await fetch("/api/integrations/gmail/connect", {
-                method: "POST",
-            })
-            const data = await res.json()
-
-            if (res.ok && data.authUrl) {
-                window.location.href = data.authUrl
-            } else {
-                throw new Error(data.message || "Failed to initiate Gmail connection")
-            }
+            await new Promise((r) => setTimeout(r, 800))
+            setIsConnected(true)
+            setGmailEmail("mock-vendor@gmail.com")
+            toast.success("Gmail connected successfully!")
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "Failed to connect Gmail"
             toast.error(errorMessage)
+        } finally {
             setConnecting(false)
         }
     }
 
     const handleDisconnect = async () => {
         try {
-            const res = await fetch("/api/integrations/gmail/disconnect", {
-                method: "POST",
-            })
-            if (res.ok) {
-                setIsConnected(false)
-                setGmailEmail(null)
-                toast.success("Gmail disconnected successfully")
-            } else {
-                const data = await res.json()
-                throw new Error(data.message || "Failed to disconnect")
-            }
+            await new Promise((r) => setTimeout(r, 800))
+            setIsConnected(false)
+            setGmailEmail(null)
+            toast.success("Gmail disconnected successfully")
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "Failed to disconnect Gmail"
             toast.error(errorMessage)
@@ -274,23 +247,8 @@ function GmailConnectContent() {
         }
         setThemeSaving(true)
         try {
-            const res = await fetch(`/api/stores/${encodeURIComponent(activeStoreId)}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ gmailReplyTheme: themeDraft }),
-            })
-            const data = await res.json().catch(() => ({}))
-            if (!res.ok) {
-                throw new Error(
-                    typeof (data as { message?: string }).message === "string"
-                        ? (data as { message: string }).message
-                        : "Save failed",
-                )
-            }
-            const patch = data as { gmailReplyTheme?: ResolvedGmailReplyTheme | null }
-            if (patch.gmailReplyTheme !== undefined) {
-                setThemeDraft(parseGmailReplyThemeJson(patch.gmailReplyTheme ?? null))
-            }
+            await new Promise((r) => setTimeout(r, 600))
+            setThemeDraft(themeDraft)
             toast.success("Email appearance saved")
             setThemeModalOpen(false)
         } catch (e) {
@@ -304,21 +262,8 @@ function GmailConnectContent() {
         if (!file || !activeStoreId) return
         setUploadingGmailLogo(true)
         try {
-            const fd = new FormData()
-            fd.append("file", file)
-            fd.append("storeId", activeStoreId)
-            const res = await fetch("/api/uploads/gmail-reply-logo", {
-                method: "POST",
-                body: fd,
-            })
-            const data = await res.json().catch(() => ({}))
-            if (!res.ok) {
-                throw new Error(typeof data.message === "string" ? data.message : "Upload failed")
-            }
-            if (typeof data.url !== "string") {
-                throw new Error("Invalid upload response")
-            }
-            setThemeDraft((d) => ({ ...d, logoUrl: data.url }))
+            await new Promise((r) => setTimeout(r, 600))
+            setThemeDraft((d) => ({ ...d, logoUrl: "https://via.placeholder.com/150" }))
             toast.success("Logo uploaded")
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "Upload failed")
@@ -331,19 +276,7 @@ function GmailConnectContent() {
         if (!activeStoreId) return
         setThemeSaving(true)
         try {
-            const res = await fetch(`/api/stores/${encodeURIComponent(activeStoreId)}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ gmailReplyTheme: null }),
-            })
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}))
-                throw new Error(
-                    typeof (data as { message?: string }).message === "string"
-                        ? (data as { message: string }).message
-                        : "Reset failed",
-                )
-            }
+            await new Promise((r) => setTimeout(r, 600))
             setThemeDraft(parseGmailReplyThemeJson(null))
             toast.success("Restored default appearance")
         } catch (e) {

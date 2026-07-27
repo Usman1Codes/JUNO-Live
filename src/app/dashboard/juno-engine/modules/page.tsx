@@ -166,23 +166,12 @@ export default function JunoEngineModulesPage() {
     const [moduleInfoOpen, setModuleInfoOpen] = useState(false)
 
     const load = useCallback(async (storeId: string) => {
-        const res = await fetch(`/api/stores/${encodeURIComponent(storeId)}`)
-        const raw = await res.json().catch(() => ({}))
-        const errBody = raw as { message?: string }
-        if (!res.ok) {
-            throw new Error(
-                typeof errBody.message === "string" && errBody.message.trim()
-                    ? errBody.message
-                    : res.status === 401
-                      ? "Sign in again to load store settings."
-                      : "Failed to load store settings",
-            )
-        }
-        const data = raw as {
-            aiModules?: unknown
-            sharedFieldAnswers?: unknown
-            customAiModules?: unknown
-            categoryMetadetailsEnabled?: boolean
+        await new Promise((r) => setTimeout(r, 400))
+        const data = {
+            aiModules: null,
+            sharedFieldAnswers: null,
+            customAiModules: null,
+            categoryMetadetailsEnabled: true,
         }
         const parsedMods = parseAiModulesJson(data.aiModules)
         const catOn = Boolean(data.categoryMetadetailsEnabled)
@@ -201,11 +190,8 @@ export default function JunoEngineModulesPage() {
         let cancelled = false
             ; (async () => {
                 try {
-                    const res = await fetch("/api/stores")
-                    if (!res.ok) return
-                    const data = (await res.json()) as {
-                        stores?: { id: string; isActive: boolean }[]
-                    }
+                    await new Promise((r) => setTimeout(r, 400))
+                    const data = { stores: [{ id: "mock_store", isActive: true }] }
                     const active = (data.stores || []).find((s) => s.isActive)
                     if (!cancelled) setActiveStoreId(active?.id ?? null)
                 } catch {
@@ -289,31 +275,13 @@ export default function JunoEngineModulesPage() {
                 ...mods,
                 CATEGORY_METADETAILS: categoryAutomation(categoryMetaEnabled),
             }
-            const res = await fetch(`/api/stores/${encodeURIComponent(activeStoreId)}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    aiModules: serializeAiModules(mergedMods),
-                    categoryMetadetailsEnabled: categoryMetaEnabled,
-                    sharedFieldAnswers: sharedFieldAnswersPayload(sharedFields),
-                    customAiModules: customAiModulesPayload(customModuleOverride ?? customModules),
-                }),
-            })
-            const j = (await res.json().catch(() => ({}))) as {
-                message?: string
-                aiModules?: unknown
-                sharedFieldAnswers?: unknown
-                customAiModules?: unknown
-                categoryMetadetailsEnabled?: boolean
-            }
-            if (!res.ok) throw new Error(j.message || "Save failed")
-            const nextMods = parseAiModulesJson(j.aiModules ?? serializeAiModules(mergedMods))
-            const catOn = Boolean(j.categoryMetadetailsEnabled)
-            nextMods.CATEGORY_METADETAILS = categoryAutomation(catOn)
+            await new Promise((r) => setTimeout(r, 600))
+            const nextMods = mergedMods
+            const catOn = categoryMetaEnabled
             setMods(nextMods)
             setCategoryMetaEnabled(catOn)
-            setSharedFields(parseSharedFieldAnswersJson(j.sharedFieldAnswers))
-            setCustomModules(parseCustomAiModulesJson(j.customAiModules))
+            setSharedFields(sharedFields)
+            setCustomModules(customModuleOverride ?? customModules)
             setToast("Saved.")
             return { ok: true }
         } catch (e) {

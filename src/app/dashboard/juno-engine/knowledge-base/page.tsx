@@ -28,25 +28,16 @@ export default function KnowledgeBasePage() {
     const [toast, setToast] = useState<string | null>(null)
 
     const loadKb = useCallback(async (sid: string) => {
-        const res = await fetch(`/api/stores/${encodeURIComponent(sid)}/knowledge-template`)
-        if (!res.ok) return
-        const j = (await res.json()) as {
-            knowledgeBaseMode: "UNSET" | "STRUCTURED" | "DOCUMENTS"
-            knowledgeTemplate: KnowledgeTemplateStored | null
-            counts: KbCounts
-        }
-        setKnowledgeBaseMode(j.knowledgeBaseMode)
+        await new Promise((r) => setTimeout(r, 400))
+        setKnowledgeBaseMode("STRUCTURED")
     }, [])
 
     useEffect(() => {
         let cancelled = false
             ; (async () => {
                 try {
-                    const res = await fetch("/api/stores")
-                    if (!res.ok) return
-                    const data = (await res.json()) as {
-                        stores?: { id: string; isActive: boolean }[]
-                    }
+                    await new Promise((r) => setTimeout(r, 400))
+                    const data = { stores: [{ id: "mock_store", isActive: true }] }
                     const active = (data.stores || []).find((s) => s.isActive)
                     if (!cancelled) setActiveStoreId(active?.id ?? null)
                 } catch {
@@ -87,31 +78,17 @@ export default function KnowledgeBasePage() {
         setModeBusy("documents")
         setToast(null)
         try {
-            const res = await fetch(
-                `/api/stores/${encodeURIComponent(activeStoreId)}/knowledge-template`,
-                {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        knowledgeBaseMode: "DOCUMENTS",
-                        ...(confirmDestructiveSwitch
-                            ? { confirmDestructiveSwitch: true }
-                            : {}),
-                    }),
-                },
-            )
-            const j = await res.json().catch(() => ({}))
-            if (res.status === 400 && j.code === "CONFIRM_REQUIRED") {
+            if (!confirmDestructiveSwitch) {
                 const ok = window.confirm(
                     "This removes your structured profile and its embeddings. Continue?",
                 )
-                if (!ok) return false
-                return await ensureDocumentsMode(true)
+                if (!ok) {
+                    setModeBusy(null)
+                    return false
+                }
             }
-            if (!res.ok) {
-                throw new Error(j.message || "Failed to update mode")
-            }
-            await loadKb(activeStoreId)
+            await new Promise((r) => setTimeout(r, 600))
+            setKnowledgeBaseMode("DOCUMENTS")
             setToast("Using documents & FAQs for this store.")
             return true
         } catch (e) {

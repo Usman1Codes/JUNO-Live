@@ -93,28 +93,26 @@ export default function TicketDetailPage() {
         setLoading(true)
         setError(null)
         const decodedId = decodeURIComponent(params.ticketId)
-        let cursor: string | null = null
-        let mergedTicket: TicketData | null = null
-        while (true) {
-          const url = cursor
-            ? `/api/juno-engine/tickets/${encodeURIComponent(decodedId)}?limit=100&before=${encodeURIComponent(cursor)}`
-            : `/api/juno-engine/tickets/${encodeURIComponent(decodedId)}?limit=100`
-          const res = await fetch(url, {
-            cache: "no-store",
-          })
-          if (!res.ok) {
-            throw new Error("Failed to load ticket")
-          }
-          const data = (await res.json()) as { ticket: TicketData; nextCursor?: string | null }
-          if (!data.ticket) break
-          if (!mergedTicket) {
-            mergedTicket = { ...data.ticket, messages: [...(data.ticket.messages || [])] }
-          } else {
-            mergedTicket.messages.push(...(data.ticket.messages || []))
-            mergedTicket.messagesCount = mergedTicket.messages.length
-          }
-          if (!data.nextCursor) break
-          cursor = data.nextCursor
+        await new Promise((r) => setTimeout(r, 400))
+        let mergedTicket: TicketData | null = {
+            id: decodedId,
+            subject: "Mock Ticket Subject",
+            rootSubject: "Mock Ticket Subject",
+            customerEmail: "customer@example.com",
+            status: "open",
+            updatedAt: new Date().toISOString(),
+            messagesCount: 1,
+            lastMessageSnippet: "Hello, this is a mock message snippet.",
+            messages: [
+                {
+                    id: "msg_1",
+                    subject: "Mock Ticket Subject",
+                    bodyPreview: "Hello, this is a mock message snippet.",
+                    status: "delivered",
+                    trigger: "STOREFRONT_TICKET",
+                    sentAt: new Date().toISOString(),
+                }
+            ]
         }
         if (!mergedTicket) {
           setError("Ticket not found.")
@@ -155,14 +153,26 @@ export default function TicketDetailPage() {
     setAskPreviewLoading(true)
     setAskPreviewError(null)
     try {
-      const res = await fetch(
-        `/api/juno-engine/tickets/ask-supplier?orderRef=${encodeURIComponent(ref)}`,
-        { cache: "no-store" },
-      )
-      const data = (await res.json()) as AskSupplierPreview
-      if (!res.ok) {
-        throw new Error((data as { message?: string }).message || "Preview failed")
+      await new Promise((r) => setTimeout(r, 600))
+      const data: AskSupplierPreview = {
+          order: { shopifyOrderId: "1", orderNumber: ref },
+          groups: [
+              {
+                  supplierUserId: "sup_1",
+                  companyName: "Mock Supplier Inc",
+                  lines: [
+                      {
+                          lineIndex: 0,
+                          title: "Mock Product",
+                          sku: "MOCK-123",
+                          quantity: 1,
+                          shopifyProductId: "prod_1",
+                      }
+                  ]
+              }
+          ]
       }
+
       setAskPreview(data)
       if (!data.order) {
         setAskPreviewError(
@@ -195,19 +205,9 @@ export default function TicketDetailPage() {
       .join("\n")
     setDraftingSupplierId(supplierUserId)
     try {
-      const res = await fetch("/api/juno-engine/tickets/ask-supplier/draft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderRef: ref,
-          supplierUserId,
-          ticketSnippet: snippet.slice(0, 6000),
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.message || "Draft failed")
-      }
+      await new Promise((r) => setTimeout(r, 600))
+      const data = { draft: "Hello, can you help with this order?" }
+
       setMsgBySupplier((prev) => ({
         ...prev,
         [supplierUserId]: typeof data.draft === "string" ? data.draft : "",
@@ -229,20 +229,9 @@ export default function TicketDetailPage() {
     setSendingSupplierId(supplierUserId)
     setAskPreviewError(null)
     try {
-      const res = await fetch("/api/juno-engine/tickets/ask-supplier", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderRef: ref,
-          ticketKey: ticket.id,
-          supplierUserId,
-          message: text,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.message || "Send failed")
-      }
+      await new Promise((r) => setTimeout(r, 600))
+      const data = {}
+
       setMsgBySupplier((prev) => ({ ...prev, [supplierUserId]: "" }))
     } catch (e) {
       setAskPreviewError(e instanceof Error ? e.message : "Send failed")
@@ -256,13 +245,9 @@ export default function TicketDetailPage() {
     setDraftingCustomer(true)
     setCustomerError(null)
     try {
-      const res = await fetch("/api/juno-engine/tickets/email-customer/draft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticketId: ticket.id }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.message || "Draft failed")
+      await new Promise((r) => setTimeout(r, 600))
+      const data = { subject: ticket.subject, body: "Hi, here is an update regarding your ticket..." }
+
       if (typeof data.subject === "string" && data.subject.trim()) {
         setCustomerSubject(data.subject)
       }
@@ -288,18 +273,9 @@ export default function TicketDetailPage() {
     setSendingCustomer(true)
     setCustomerError(null)
     try {
-      const res = await fetch("/api/juno-engine/tickets/email-customer/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticketId: ticket.id,
-          to,
-          subject,
-          body,
-        }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.message || "Send failed")
+      await new Promise((r) => setTimeout(r, 600))
+      const data = {}
+
       setCustomerModalOpen(false)
       setCustomerBody("")
       setCustomerError(null)

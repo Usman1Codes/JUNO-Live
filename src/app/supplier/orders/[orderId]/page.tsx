@@ -89,10 +89,26 @@ export default function SupplierOrderDetailsPage() {
             setLoading(true)
             setError("")
             try {
-                const res = await fetch(`/api/supplier/orders/${orderId}`)
-                if (!res.ok) throw new Error("Failed to load order")
-                const data = await res.json()
-                const o = data.order as SupplierOrder
+                await new Promise(r => setTimeout(r, 600))
+                const o: SupplierOrder = {
+                    id: orderId,
+                    orderNumber: "#1001",
+                    email: "customer@example.com",
+                    totalPrice: "150.00",
+                    currency: "USD",
+                    financialStatus: "paid",
+                    fulfillmentStatus: "UNFULFILLED",
+                    trackingNumber: "",
+                    trackingCompany: "",
+                    trackingUrl: "",
+                    createdAt: new Date().toISOString(),
+                    lineItems: [
+                        { id: 1, title: "Test Product", quantity: 1, price: "150.00", sku: "TP-001" }
+                    ],
+                    customer: { first_name: "John", last_name: "Doe", email: "customer@example.com", phone: "1234567890" },
+                    shippingAddress: { first_name: "John", last_name: "Doe", address1: "123 Main St", city: "New York", province: "NY", country: "US", zip: "10001", phone: "1234567890" },
+                    store: { id: "store_1", businessName: "Acme Corp", shopifyStoreName: "acme-corp" }
+                }
                 setOrder(o)
                 setFulfillmentStatus(o.fulfillmentStatus || "UNFULFILLED")
                 setTrackingNumber(o.trackingNumber || "")
@@ -189,33 +205,11 @@ export default function SupplierOrderDetailsPage() {
         if (!order || holdIncomplete) return
         setSaving(true)
         try {
-            const res = await fetch(`/api/supplier/orders/${order.id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    fulfillmentStatus,
-                    trackingNumber: trackingLocked ? null : trackingNumber || null,
-                    trackingCompany: trackingLocked ? null : trackingCompany || null,
-                    trackingUrl: trackingLocked ? null : trackingUrl || null,
-                    holdReasonCode: fulfillmentStatus === "ON_HOLD" ? holdReasonCode : null,
-                    holdNote:
-                        fulfillmentStatus === "ON_HOLD" && holdReasonCode === "other"
-                            ? holdNote.trim()
-                            : fulfillmentStatus === "ON_HOLD"
-                              ? null
-                              : null,
-                }),
-            })
-            const data = (await res.json().catch(() => ({}))) as {
-                message?: string
-                order?: SupplierOrder & { fulfillmentStatusDisplay?: string }
-            }
-            if (!res.ok) throw new Error(data.message || "Failed to save")
+            await new Promise(r => setTimeout(r, 600))
             toast.success("Order updated successfully")
-            const next = data.order
             setOrder({
                 ...order,
-                fulfillmentStatus: next?.fulfillmentStatus ?? fulfillmentStatus,
+                fulfillmentStatus: fulfillmentStatus,
                 trackingNumber: trackingLocked ? null : trackingNumber,
                 trackingCompany: trackingLocked ? null : trackingCompany,
                 trackingUrl: trackingLocked ? null : trackingUrl,
@@ -226,7 +220,6 @@ export default function SupplierOrderDetailsPage() {
                         : fulfillmentStatus === "ON_HOLD"
                           ? null
                           : null,
-                holdReasonLabel: next?.holdReasonLabel ?? order.holdReasonLabel,
             })
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "Failed to update order")

@@ -108,10 +108,33 @@ function SupplierVendorsContent() {
     const fetchConnections = async ({ silent = false }: { silent?: boolean } = {}) => {
         try {
             if (!silent) setLoading(true)
-            const res = await fetch("/api/supplier/vendors")
-            if (!res.ok) throw new Error("Failed to fetch connections")
-            const data = await res.json()
-            setConnections(data.connections || [])
+            await new Promise(r => setTimeout(r, 600))
+            setConnections([
+                {
+                    id: "conn_1",
+                    status: "CONNECTED",
+                    createdAt: new Date().toISOString(),
+                    store: {
+                        id: "store_1",
+                        businessName: "Vendor Shop A",
+                        shopifyDomain: "shop-a.myshopify.com",
+                        shopifyStoreName: "Shop A",
+                        user: { name: "Alice", email: "alice@shopa.com" }
+                    }
+                },
+                {
+                    id: "conn_2",
+                    status: "PENDING",
+                    createdAt: new Date().toISOString(),
+                    store: {
+                        id: "store_2",
+                        businessName: "Vendor Shop B",
+                        shopifyDomain: null,
+                        shopifyStoreName: null,
+                        user: { name: "Bob", email: "bob@shopb.com" }
+                    }
+                }
+            ])
             setError("")
         } catch {
             setError("Failed to load vendor connections")
@@ -122,11 +145,21 @@ function SupplierVendorsContent() {
 
     const fetchProductSyncs = async () => {
         try {
-            const res = await fetch("/api/supplier/product-syncs?status=PENDING")
-            if (res.ok) {
-                const data = await res.json()
-                setProductSyncs(data.syncs || [])
-            }
+            await new Promise(r => setTimeout(r, 400))
+            setProductSyncs([
+                {
+                    id: "sync_1",
+                    shopifyProductId: "prod_1",
+                    shopifyProductTitle: "Awesome Product",
+                    status: "PENDING",
+                    createdAt: new Date().toISOString(),
+                    store: {
+                        id: "store_1",
+                        businessName: "Vendor Shop A",
+                        user: { name: "Alice", email: "alice@shopa.com" }
+                    }
+                }
+            ])
         } catch (error) {
             console.error("Error fetching product syncs:", error)
         }
@@ -134,12 +167,7 @@ function SupplierVendorsContent() {
 
     const handleStatusChange = async (connectionId: string, status: "CONNECTED" | "REJECTED") => {
         try {
-            const res = await fetch(`/api/supplier/vendors/${connectionId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status })
-            })
-            if (!res.ok) throw new Error("Failed to update connection")
+            await new Promise(r => setTimeout(r, 600))
             setSuccess(`Connection ${status.toLowerCase()} successfully`)
             void fetchConnections({ silent: true })
         } catch {
@@ -149,12 +177,8 @@ function SupplierVendorsContent() {
 
     const handleDelete = async (connectionId: string) => {
         if (!confirm("Are you sure you want to remove this connection?")) return
-
         try {
-            const res = await fetch(`/api/supplier/vendors/${connectionId}`, {
-                method: "DELETE"
-            })
-            if (!res.ok) throw new Error("Failed to delete connection")
+            await new Promise(r => setTimeout(r, 600))
             setSuccess("Connection removed successfully")
             void fetchConnections({ silent: true })
         } catch {
@@ -164,15 +188,7 @@ function SupplierVendorsContent() {
 
     const handleProductSyncAction = async (syncId: string, action: "accept" | "reject") => {
         try {
-            const res = await fetch(`/api/products/sync/${syncId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action })
-            })
-            if (!res.ok) {
-                const data = await res.json()
-                throw new Error(data.message || "Failed to update sync request")
-            }
+            await new Promise(r => setTimeout(r, 600))
             setSuccess(`Product sync ${action === "accept" ? "accepted" : "rejected"} successfully`)
             void fetchProductSyncs()
             void fetchConnections({ silent: true })
@@ -190,18 +206,11 @@ function SupplierVendorsContent() {
         setAcceptingToken(true)
         setError("")
         try {
-            const res = await fetch("/api/supplier/invitations/accept", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: invitationToken.toUpperCase() })
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.message || "Failed to accept invitation")
-            setSuccess(data.message || "Invitation accepted successfully! You are now connected.")
+            await new Promise(r => setTimeout(r, 600))
+            setSuccess("Invitation accepted successfully! You are now connected.")
             setInvitationToken("")
             setShowTokenInput(false)
             void fetchConnections({ silent: true })
-            // Send supplier to JUNO CHAT so encryption keys auto-setup on first open
             setTimeout(() => router.push("/supplier/chat"), 1500)
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to accept invitation")

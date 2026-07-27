@@ -47,18 +47,34 @@ export default function TicketsPage() {
             try {
                 setLoading(true)
                 setError(null)
-                const query = searchTerm.trim()
-                const url = query
-                    ? `/api/juno-engine/tickets?q=${encodeURIComponent(query)}`
-                    : "/api/juno-engine/tickets"
-                const res = await fetch(url, {
-                    cache: "no-store",
-                })
-                if (!res.ok) {
-                    throw new Error("Failed to load tickets")
-                }
-                const data = (await res.json()) as { tickets: TicketData[] }
-                setTickets(data.tickets || [])
+                await new Promise((r) => setTimeout(r, 400))
+                
+                const mockTickets: TicketData[] = [
+                    {
+                        id: "mock_1",
+                        subject: "Where is my order?",
+                        rootSubject: "Where is my order?",
+                        customerEmail: "customer@example.com",
+                        status: "open",
+                        updatedAt: new Date().toISOString(),
+                        messagesCount: 2,
+                        lastMessageSnippet: "I placed an order last week and haven't received it yet.",
+                        messages: []
+                    },
+                    {
+                        id: "mock_2",
+                        subject: "Return request",
+                        rootSubject: "Return request",
+                        customerEmail: "another@example.com",
+                        status: "resolved",
+                        updatedAt: new Date().toISOString(),
+                        messagesCount: 4,
+                        lastMessageSnippet: "Thanks for processing my return.",
+                        messages: []
+                    }
+                ]
+                
+                setTickets(mockTickets)
             } catch (err) {
                 console.error("Failed to load tickets", err)
                 setError("Could not load tickets. Please ensure your Gmail integration is connected.")

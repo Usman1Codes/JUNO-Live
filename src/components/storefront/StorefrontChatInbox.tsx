@@ -8,52 +8,48 @@ import StorefrontChatInboxClient, {
 } from "@/components/storefront/StorefrontChatInboxClient"
 
 export default async function StorefrontChatInbox() {
-    const session = await auth()
-
-    if (!session?.user?.id) {
-        redirect("/login")
+    const store = {
+        id: "mock_store_1",
+        businessName: "Mock Store",
+        shopifyDomain: "mock.myshopify.com"
     }
 
-    const stores = await prisma.store.findMany({
-        where: { userId: session.user.id, onboardingComplete: true },
-        select: storeSelectDashboardStorefrontInbox,
-    })
+    const conversations = [
+        {
+            id: "conv-1",
+            visitorId: "vis-123",
+            customerEmail: "customer@example.com",
+            updatedAt: new Date()
+        }
+    ]
 
-    const store = stores.find((s) => s.isActive) ?? stores[0]
-
-    if (!store) {
-        redirect("/onboarding")
-    }
-
-    const conversations = await prisma.storefrontChatConversation.findMany({
-        where: { storeId: store.id },
-        orderBy: { updatedAt: "desc" },
-        take: 25,
-        select: { id: true, visitorId: true, customerEmail: true, updatedAt: true },
-    })
-
-    const conversationIds = conversations.map((c) => c.id)
-
-    /** Most recent messages store-wide (then grouped per conversation); avoids loading unbounded history. */
-    const messages = conversationIds.length
-        ? await prisma.storefrontChatMessage.findMany({
-              where: { conversationId: { in: conversationIds } },
-              orderBy: { createdAt: "desc" },
-              take: 800,
-              select: {
-                  id: true,
-                  conversationId: true,
-                  content: true,
-                  createdAt: true,
-                  senderType: true,
-              },
-          })
-        : []
+    const messages: Array<{
+        id: string;
+        conversationId: string;
+        content: string;
+        createdAt: Date;
+        senderType: "CUSTOMER" | "AI";
+    }> = [
+        {
+            id: "msg-1",
+            conversationId: "conv-1",
+            content: "Hello, I have a question about my order.",
+            createdAt: new Date(Date.now() - 60000),
+            senderType: "CUSTOMER"
+        },
+        {
+            id: "msg-2",
+            conversationId: "conv-1",
+            content: "Hi! I'd be happy to help. What's your order number?",
+            createdAt: new Date(),
+            senderType: "AI"
+        }
+    ]
 
     const byConversationId = new Map<string, typeof messages>()
     for (const m of messages) {
         const list = byConversationId.get(m.conversationId) ?? []
-        list.push(m)
+        list.push(m as any)
         byConversationId.set(m.conversationId, list)
     }
     for (const list of byConversationId.values()) {

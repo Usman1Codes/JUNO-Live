@@ -61,13 +61,24 @@ export default function SupplierSettingsPage() {
     const fetchProfile = async () => {
         try {
             setLoading(true)
-            const res = await fetch("/api/supplier/profile")
-            if (!res.ok) throw new Error("Failed to fetch profile")
-            const data = await res.json()
-            setProfile(data.profile)
+            await new Promise(r => setTimeout(r, 600))
+            const profileData = {
+                id: "supplier_1",
+                companyName: "Acme Supplier Co",
+                description: "Premium gadgets supplier",
+                user: {
+                    name: "John Supplier",
+                    email: "john@supplier.com"
+                },
+                _count: {
+                    products: 42,
+                    connections: 5
+                }
+            }
+            setProfile(profileData)
             setFormData({
-                companyName: data.profile.companyName || "",
-                description: data.profile.description || ""
+                companyName: profileData.companyName || "",
+                description: profileData.description || ""
             })
             setError("")
         } catch {
@@ -83,17 +94,7 @@ export default function SupplierSettingsPage() {
         setError("")
 
         try {
-            const res = await fetch("/api/supplier/profile", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
-            })
-
-            if (!res.ok) {
-                const data = await res.json()
-                throw new Error(data.message || "Failed to update profile")
-            }
-
+            await new Promise(r => setTimeout(r, 600))
             setSuccess("Profile updated successfully")
             fetchProfile()
         } catch (err) {

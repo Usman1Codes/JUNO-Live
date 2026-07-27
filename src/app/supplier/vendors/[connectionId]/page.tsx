@@ -133,43 +133,34 @@ export default function SupplierVendorDetailPage() {
             setLoading(true)
             setError("")
 
-            const [connRes, offersRes, productsRes] = await Promise.all([
-                fetch(`/api/supplier/vendors/${connectionId}`),
-                fetch(`/api/supplier/vendors/${connectionId}/offers`),
-                fetch("/api/supplier/products")
-            ])
-
-            if (!connRes.ok) {
-                const data = await connRes.json().catch(() => ({}))
-                throw new Error(data.message || "Failed to load vendor")
-            }
-
-            const connData = await connRes.json()
-            setConnection(connData.connection)
-
-            if (offersRes.ok) {
-                const offersData = await offersRes.json()
-                setOffers(offersData.offers || [])
-            } else {
-                setOffers([])
-            }
-
-            // Load synced products for this specific vendor (store)
-            if (productsRes.ok) {
-                const productsData = await productsRes.json()
-                const allProducts: SupplierProduct[] = productsData.products || []
-                const storeId = connData.connection?.store?.id
-                if (storeId) {
-                    const syncedForVendor = allProducts.filter(
-                        (p) => p.isSynced && p.vendor && p.vendor.id === storeId
-                    )
-                    setSyncedProducts(syncedForVendor)
-                } else {
-                    setSyncedProducts([])
+            await new Promise(r => setTimeout(r, 600))
+            const connData = {
+                connection: {
+                    id: connectionId,
+                    status: "CONNECTED",
+                    createdAt: new Date().toISOString(),
+                    store: {
+                        id: "store_1",
+                        businessName: "Vendor Shop A",
+                        shopifyDomain: "shop-a.myshopify.com",
+                        shopifyStoreName: "Shop A",
+                        user: { name: "Alice", email: "alice@shopa.com" }
+                    }
                 }
-            } else {
-                setSyncedProducts([])
             }
+            setConnection(connData.connection as ConnectionDetail)
+
+            setOffers([
+                {
+                    id: "offer_1",
+                    price: 45.0,
+                    quantity: 100,
+                    createdAt: new Date().toISOString(),
+                    product: { id: "p1", title: "Test Product", description: "", price: 50.0, sku: "TP-001", imageUrl: null },
+                    store: { id: "store_1", businessName: "Vendor Shop A" }
+                }
+            ])
+            setSyncedProducts([])
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to load vendor")
         } finally {
@@ -187,14 +178,18 @@ export default function SupplierVendorDetailPage() {
 
         try {
             setProductsLoading(true)
-            const res = await fetch("/api/supplier/products")
-            if (!res.ok) throw new Error("Failed to load products")
-            const data = await res.json()
-            const allProducts: SupplierProduct[] = (data.products || []).filter(
-                (p: SupplierProduct) => !p.isSynced
-            )
+            await new Promise(r => setTimeout(r, 600))
+            const allProducts: SupplierProduct[] = [
+                {
+                    id: "mock_p1",
+                    title: "Sample Widget",
+                    description: "A very nice widget.",
+                    price: 29.99,
+                    sku: "WIDG-001",
+                    imageUrl: null
+                }
+            ]
 
-            // Filter out products already offered to this vendor
             const offeredProductIds = new Set(offers.map((o) => o.product.id))
             const availableProducts = allProducts.filter((p) => !offeredProductIds.has(p.id))
             setProducts(availableProducts)
@@ -221,24 +216,8 @@ export default function SupplierVendorDetailPage() {
         setError("")
 
         try {
-            const res = await fetch(`/api/supplier/vendors/${connectionId}/offers`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    productId: selectedProductId,
-                    price,
-                    quantity
-                })
-            })
-
-            const data = await res.json()
-            if (!res.ok) {
-                throw new Error(data.message || "Failed to provide product")
-            }
-
-            setSuccess(data.message || "Product provided to vendor successfully")
+            await new Promise(r => setTimeout(r, 600))
+            setSuccess("Product provided to vendor successfully")
             setShowProvideModal(false)
             setSelectedProductId("")
             setPriceInput("")
@@ -273,16 +252,8 @@ export default function SupplierVendorDetailPage() {
         setError("")
         setSuccess("")
         try {
-            const res = await fetch(`/api/supplier/vendors/offers/${editingOffer.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ price, quantity })
-            })
-            const data = await res.json()
-            if (!res.ok) {
-                throw new Error(data.message || "Failed to update offer")
-            }
-            setSuccess(data.message || "Offer updated successfully")
+            await new Promise(r => setTimeout(r, 600))
+            setSuccess("Offer updated successfully")
             setEditingOffer(null)
             fetchData()
         } catch (err) {
@@ -304,14 +275,8 @@ export default function SupplierVendorDetailPage() {
         setSuccess("")
 
         try {
-            const res = await fetch(`/api/supplier/vendors/offers/${withdrawingOffer.id}`, {
-                method: "DELETE"
-            })
-            const data = await res.json().catch(() => ({}))
-            if (!res.ok) {
-                throw new Error(data.message || "Failed to withdraw offer")
-            }
-            setSuccess(data.message || "Offer withdrawn successfully")
+            await new Promise(r => setTimeout(r, 600))
+            setSuccess("Offer withdrawn successfully")
             setOffers((prev) => prev.filter((o) => o.id !== withdrawingOffer.id))
             setWithdrawingOffer(null)
         } catch (err) {
@@ -357,30 +322,13 @@ export default function SupplierVendorDetailPage() {
         setSuccess("")
 
         try {
-            const res = await fetch(`/api/supplier/products/${editingSyncedId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    title: product.title,
-                    description: product.description,
-                    price,
-                    sku: product.sku,
-                    imageUrl: product.imageUrl,
-                    quantity
-                })
-            })
-
-            const data = await res.json().catch(() => ({}))
-            if (!res.ok) {
-                throw new Error(data.message || "Failed to update synced product")
-            }
-
+            await new Promise(r => setTimeout(r, 600))
             setSyncedProducts((prev) =>
                 prev.map((p) =>
                     p.id === editingSyncedId ? { ...p, price, availableQuantity: quantity } : p
                 )
             )
-            setSuccess(data.message || "Synced product updated successfully")
+            setSuccess("Synced product updated successfully")
             setEditingSyncedId("")
             setSyncedPriceInput("")
             setSyncedQuantityInput("")

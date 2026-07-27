@@ -29,11 +29,26 @@ export default function SupplierOrdersPage() {
     const fetchOrders = async () => {
         try {
             setLoading(true)
-            const res = await fetch("/api/supplier/orders")
-            if (!res.ok) throw new Error("Failed to fetch orders")
-            const data = await res.json()
-            setOrders(data.orders || [])
-            setConnectedVendors(data.connectedVendors || 0)
+            await new Promise(r => setTimeout(r, 600))
+            setOrders([
+                {
+                    id: "order_1",
+                    orderNumber: "#1001",
+                    vendorName: "Acme Corp",
+                    createdAt: new Date().toISOString(),
+                    status: "FULFILLED",
+                    total: 150.00
+                },
+                {
+                    id: "order_2",
+                    orderNumber: "#1002",
+                    vendorName: "Widgets Inc",
+                    createdAt: new Date().toISOString(),
+                    status: "UNFULFILLED",
+                    total: 45.99
+                }
+            ])
+            setConnectedVendors(5)
             setError("")
         } catch {
             setError("Failed to load orders")
